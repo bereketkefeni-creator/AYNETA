@@ -34,7 +34,9 @@ import com.google.mediapipe.tasks.vision.core.RunningMode
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetector
 import com.google.mediapipe.tasks.vision.objectdetector.ObjectDetectorResult
 import java.util.concurrent.Executors
-
+import com.example.ayneta.features.vision.TFLiteObjectAnalyzer
+import com.example.ayneta.features.vision.SpatialReasoner
+import com.example.ayneta.features.vision.Detection
 /**
  * A single detection that we want to draw on the camera preview.
  */
@@ -208,7 +210,10 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        lateinit var analyzer: TFLiteObjectAnalyzer
 
+// In onCreate():
+        analyzer = TFLiteObjectAnalyzer(this)
         previewView = PreviewView(this)
 
         detectionOverlay = DetectionOverlayView(this)

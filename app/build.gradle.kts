@@ -5,8 +5,12 @@ plugins {
 
 android {
     namespace = "com.example.ayneta"
+    buildToolsVersion = "34.0.0"
     compileSdk {
         version = release(37)
+        testOptions {
+            unitTests.isReturnDefaultValues = true
+        }
     }
 
     defaultConfig {
@@ -53,6 +57,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("com.google.mediapipe:tasks-vision:latest.release")
+    implementation("org.tensorflow:tensorflow-lite-task-vision:0.4.4")  // ← ADD THIS
     implementation("androidx.camera:camera-camera2:1.5.0")
     implementation("androidx.camera:camera-lifecycle:1.5.0")
     implementation("androidx.camera:camera-view:1.5.0")
