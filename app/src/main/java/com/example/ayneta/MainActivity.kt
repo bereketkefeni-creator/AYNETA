@@ -13,6 +13,7 @@ import android.os.Looper
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
@@ -28,6 +29,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.core.BaseOptions
 import com.google.mediapipe.tasks.vision.core.RunningMode
@@ -207,7 +211,32 @@ class MainActivity : ComponentActivity() {
                 Log.e("AYNETA", "Camera permission denied")
             }
         }
+    private val microphonePermissionLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestPermission()
+        ) { granted ->
 
+            if (granted) {
+                startAynetaService()
+            } else {
+                Log.e(
+                    "AYNETA",
+                    "Microphone permission denied"
+                )
+            }
+        }
+    private fun startAynetaService() {
+
+        val intent = Intent(
+            this,
+            AynetaService::class.java
+        )
+
+        ContextCompat.startForegroundService(
+            this,
+            intent
+        )
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         lateinit var analyzer: TFLiteObjectAnalyzer
@@ -222,14 +251,14 @@ class MainActivity : ComponentActivity() {
          * Two layers:
          *
          * Layer 1 → camera preview
-         * Layer 2 → AI bounding boxes
+         * Layer 2 → AI bounding boxes/
          */
         setContent {
-
             Box(
                 modifier = Modifier.fillMaxSize()
             ) {
 
+                // Camera
                 AndroidView(
                     factory = {
                         previewView
@@ -237,12 +266,53 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 )
 
+                // Detection overlay
                 AndroidView(
                     factory = {
                         detectionOverlay
                     },
                     modifier = Modifier.fillMaxSize()
                 )
+
+                // Temporary developer controls
+                Column {
+
+                    Button(
+                        onClick = {
+
+                            if (
+                                ContextCompat.checkSelfPermission(
+                                    this@MainActivity,
+                                    Manifest.permission.RECORD_AUDIO
+                                ) == PackageManager.PERMISSION_GRANTED
+                            ) {
+
+                                startAynetaService()
+
+                            } else {
+
+                                microphonePermissionLauncher.launch(
+                                    Manifest.permission.RECORD_AUDIO
+                                )
+                            }
+                        }
+                    ) {
+                        Text("START AYNETA")
+                    }
+
+                    Button(
+                        onClick = {
+                            val intent = Intent(
+                                this@MainActivity,
+                                AynetaService::class.java
+                            )
+
+                            stopService(intent)
+                        }
+                    ) {
+                        Text("STOP AYNETA")
+                    }
+                }
             }
         }
 
