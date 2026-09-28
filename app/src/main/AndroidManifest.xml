@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
-
-    <uses-permission android:name="android.permission.CAMERA" />
-
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-
+    <!-- CRITICAL PERMISSIONS FOR ANDROID 14+ -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-
-    <uses-permission
-        android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
-
-    <uses-feature
-        android:name="android.hardware.camera"
-        android:required="false" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -23,27 +18,31 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.AYNETA">
+        android:theme="@style/Theme.AYNETA"
+        tools:targetApi="31">
 
+        <!-- VOICE SERVICE (Microphone / Wake Word) -->
+        <service
+            android:name=".AynetaVoiceService"
+            android:exported="false"
+            android:foregroundServiceType="microphone" />
+
+        <!-- CAMERA SERVICE (Object Detection) -->
+        <service
+            android:name=".AynetaCameraService"
+            android:exported="false"
+            android:foregroundServiceType="camera" />
+
+        <!-- MAIN ACTIVITY -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.AYNETA"
-            android:windowSoftInputMode="adjustResize">
-
+            android:theme="@style/Theme.AYNETA">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
         </activity>
 
-        <service
-            android:name=".AynetaService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="microphone" />
-
     </application>
-
 </manifest>

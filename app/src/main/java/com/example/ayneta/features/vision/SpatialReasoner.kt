@@ -10,25 +10,34 @@ enum class HorizontalDirection {
 
 object SpatialReasoner {
 
-    /**
-     * Determines the horizontal direction based on raw float bounds.
-     * This version is testable in pure JVM unit tests.
-     */
-    fun horizontalDirection(left: Float, right: Float): HorizontalDirection {
+    fun horizontalDirection(
+        left: Float,
+        right: Float,
+        imageWidth: Float
+    ): HorizontalDirection {
+
+        require(imageWidth > 0f) {
+            "Image width must be greater than zero"
+        }
+
         val centerX = (left + right) / 2f
+        val normalizedX = centerX / imageWidth
 
         return when {
-            centerX < 0.33f -> HorizontalDirection.LEFT
-            centerX < 0.66f -> HorizontalDirection.CENTER
+            normalizedX < 0.33f -> HorizontalDirection.LEFT
+            normalizedX < 0.66f -> HorizontalDirection.CENTER
             else -> HorizontalDirection.RIGHT
         }
     }
 
-    /**
-     * Overload for Android's RectF.
-     * Note: In local JVM unit tests, RectF returns 0 for all properties.
-     */
-    fun horizontalDirection(box: RectF): HorizontalDirection {
-        return horizontalDirection(box.left, box.right)
+    fun horizontalDirection(
+        box: RectF,
+        imageWidth: Float
+    ): HorizontalDirection {
+        return horizontalDirection(
+            box.left,
+            box.right,
+            imageWidth
+        )
     }
 }
