@@ -19,14 +19,12 @@ import java.util.Locale
 class MainActivity : ComponentActivity() {
 
     private lateinit var tts: TextToSpeech
-    private val TAG = "AYNETA_Main"
+    private val tag = "AYNETA_Main"
 
-    // Permission launcher
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
-        val allGranted = permissions.values.all { it }
-        if (allGranted) {
+        if (permissions.values.all { it }) {
             startAynetaServices()
         } else {
             tts.speak("Permissions denied. AYNETA cannot run.", TextToSpeech.QUEUE_FLUSH, null, null)
@@ -36,28 +34,20 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Initialize TTS first
         tts = TextToSpeech(this) { status ->
             if (status == TextToSpeech.SUCCESS) {
-                // Set language to US English
                 tts.language = Locale.US
-
-                // 🎙️ MAKE IT CALM AND HUMAN-LIKE
-                tts.setSpeechRate(0.80f) // Slower than default (1.0f). Try 0.8f if still too fast.
-                tts.setPitch(0.9f)       // Normal pitch. Try 0.9f for a slightly deeper, calmer voice.
-
-                // Now check permissions and start
+                tts.setSpeechRate(0.80f)
+                tts.setPitch(0.9f)
                 checkPermissionsAndStart()
             } else {
-                Log.e(TAG, "TTS Initialization failed")
+                Log.e(tag, "TTS Initialization failed")
             }
         }
 
-        // Empty UI (Zero-Touch)
+        // Voice activation runs in the foreground service; the UI stays touch-free.
         setContent {
-            Box(modifier = Modifier.fillMaxSize()) {
-                // No buttons. Audio only.
-            }
+            Box(modifier = Modifier.fillMaxSize())
         }
     }
 
@@ -66,30 +56,23 @@ class MainActivity : ComponentActivity() {
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.CAMERA
         )
-
-        // Android 13+ needs notification permission
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             permissions.add(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        val permissionsToRequest = permissions.filter {
+        val missingPermissions = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
-
-        if (permissionsToRequest.isEmpty()) {
+        if (missingPermissions.isEmpty()) {
             startAynetaServices()
         } else {
-            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
+            requestPermissionLauncher.launch(missingPermissions.toTypedArray())
         }
     }
 
     private fun startAynetaServices() {
-        Log.d(TAG, "Starting Services...")
-
-        // Start Voice Service (Wake Word / Mic)
-        val voiceIntent = Intent(this, AynetaVoiceService::class.java)
-        ContextCompat.startForegroundService(this, voiceIntent)
-
+        Log.d(tag, "Starting services")
+        ContextCompat.startForegroundService(this, Intent(this, AynetaVoiceService::class.java))
         tts.speak("Ayneta is activated. I am listening.", TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
